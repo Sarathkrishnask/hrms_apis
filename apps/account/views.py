@@ -242,8 +242,9 @@ class loginApi(APIView):
                 return json.Response({"data":[]},"Please enter registered email Id",400, False)
 
             if len(datas['password']) == 0 or datas['password'] == '':
-                print("psswd")
                 return json.Response({"data":[]},"Please enter password",400, False)
+            
+            
 
 
             users = user_data.get(email=datas['email'])
@@ -285,3 +286,52 @@ class loginApi(APIView):
 
         except Exception as e:
             return json.Response({"data":[]},f"{e}Internal Server Error", 400,False)
+        
+
+
+class ChangePassword(APIView):
+    """
+    Change password once given forgot password
+    """
+
+    permission_classes=[permissions.AllowAny]
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super(ChangePassword, self).dispatch(request, *args, **kwargs)
+
+    @csrf_exempt
+    def post(self,request):
+        
+        try:
+            datas = j.loads(request.body.decode('utf-8'))
+            params = self.request.query_params
+            if validators.change_password_validators(datas) == False:
+                return json.Response({"data":[]},"Required field is missing",400,False)
+            
+            if datas["password"] == "" or datas["confirm_password"]=="" or datas["email"]=="":
+                return json.Response({"data":[]},"Field is empty",400,False)
+            
+
+
+            Users_data = models.User.objects
+            User_filter = Users_data.filter(id=params.get('id'),email=datas['email'])
+            
+            if not User_filter.exists():
+                return json.Response({"data":[]},"Please enter valid email and valid id",400, False)
+            
+            if len(datas['password']) < 8 or datas['password'] == '':
+                return json.Response({"data":[]},"Please enter password or length of password in short",400, False)
+            
+
+            if datas["password"].lower() != datas["confirm_password"].lower():
+                return json.Response({"data":[]}, "Password and confirm password are not same", 400, False)
+            
+            if Users_data.get(email=datas['email']).is_email_verified == False:
+                User_filter.update(password=make_password(datas["password"]),is_email_verified=True)
+                return json.Response({"data":[]},"Password changed successfully",200, True)
+
+            User_filter.update(password=make_password(datas["password"]))
+            return json.Response({"data":[]},"Password changed successfully",200, True)
+        except Exception as e:
+            return json.Response({"data":[]},"Internal Server Error", 400,False)
