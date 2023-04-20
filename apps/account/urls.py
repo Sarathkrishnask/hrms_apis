@@ -9,5 +9,4 @@ urlpatterns = [
     path('email_login/',views.loginApi.as_view(),name='email_login'),
     path('changepassword/',views.ChangePassword.as_view(),name='changepassword'),
 
-
 ]

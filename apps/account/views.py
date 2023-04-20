@@ -270,6 +270,7 @@ class loginApi(APIView):
                                                     "role_id":user_Name_id.roles_id,
                                                     "entity_id":userentity.entity_id}
             else:
+                print("admin user")
                 users.login_count +=1
                 users.save()
                 getjwt=functions.emailauth(user_datas,user_Name_id.id)
@@ -335,3 +336,4 @@ class ChangePassword(APIView):
             return json.Response({"data":[]},"Password changed successfully",200, True)
         except Exception as e:
             return json.Response({"data":[]},"Internal Server Error", 400,False)
+        
