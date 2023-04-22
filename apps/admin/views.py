@@ -1,14 +1,4 @@
 
-"""
-import django functions
-"""
-from django.shortcuts import render
-# from account.models import User
-from django.db.models import Q,Count,Sum, Max, Min
-from django.contrib.auth.hashers import make_password,check_password
-
-
-
 
 """
 import apps,models,serializers
@@ -20,7 +10,7 @@ from apps .admin import serializers as admin_serializers
 import restframeworks functions
 """
 from rest_framework.views import APIView
-from rest_framework import generics, parsers, permissions, status, viewsets
+from rest_framework import generics,permissions
 
 # Create your views here.
 
@@ -28,11 +18,10 @@ from rest_framework import generics, parsers, permissions, status, viewsets
 """
 import utils functions
 """
-from utils import json,validators,sendmail
+from utils import json
 from utils import permissions as cust_perms
-from utils import functions
-from utils.sorting import sorting_ListUser
-from utils.pagination import CustomPagination, pagination_class
+
+
 
 
 """
@@ -41,13 +30,13 @@ other import functions
 import json as j
 
 
-class ListUserApiView(generics.GenericAPIView):
+class UserListApiView(generics.GenericAPIView):
     """
     List users in adminpanel
     """
     permission_classes=[permissions.IsAuthenticated,cust_perms.ISSuperAdmin]
     queryset = account_models.User.objects.all()
-    serializer_class = admin_serializers.UserListingSerializer
+    serializer_class = admin_serializers.UserListSerializer
 
     def get(self, request):
         try:
@@ -55,8 +44,6 @@ class ListUserApiView(generics.GenericAPIView):
 
             queryset = self.filter_queryset(self.get_queryset())            
             serializer = self.get_serializer(queryset, many=True)
-            count= queryset.count()
-            print(count)
             data = json.Response(serializer.data,'Listed successfully',200,True)
             return data
         except Exception as e:
@@ -77,9 +64,12 @@ class UserDetailApiView(APIView):
 
         try:
             id_=self.request.query_params.get('id')
-            queryset = account_models.User.objects.filter(id=id_)
-            serializer = admin_serializers.UserviewingSerializers(queryset, many=True)  
-            return json.Response({"data":serializer.data}," particualr user detail view accessed successfully",200,True)
+            if id_:
+                queryset = account_models.User.objects.filter(id=id_)
+                serializer = admin_serializers.UserDetailViewSerializers(queryset, many=True)  
+                return json.Response({"data":serializer.data}," particular user detail accessed successfully",200,True)
+            elif id_ is None :
+                return json.Response({"data":id_},"No user", 400, False)
         except Exception as e:
             return json.Response({"data":[]},f"{e}Internal Server Error", 400, False)
         
@@ -120,12 +110,11 @@ class UserDetailApiView(APIView):
         try:
             user_exists = Users_data.filter(id=id_).exists()
             print(user_exists)
-            user_details_ = {}
             if user_exists:
                 user_details=account_models.User.objects.get(id=id_)
                 user_details.delete()
-                print(user_details,user_details.firstname,user_details.lastname,user_details.phone_number)
-            return json.Response({"data":user_details.firstname},"User updated successfully",201,True)
+                # print(user_details,user_details.firstname,user_details.lastname,user_details.phone_number)
+            return json.Response({"data":user_details.firstname},"User deleted successfully",201,True)
                 
         except Exception as e:
             return json.Response({"data":[]},f"{e}User not existed",400,False)

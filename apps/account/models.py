@@ -40,7 +40,7 @@ class User(auth_models.AbstractBaseUser):
 
     last_login = models.DateTimeField(null=True)
 
-    login_count = models.PositiveIntegerField(max_length=100,null=True)
+    login_count = models.PositiveIntegerField(null=True)
 
     is_email_verified = models.BooleanField(default=False)
 

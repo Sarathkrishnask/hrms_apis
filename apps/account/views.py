@@ -1,58 +1,41 @@
-from __future__ import unicode_literals
-from pyexpat import model
-from tokenize import Triple
-
-# from utils.kyc_verification import kyc_verify
-
-
 """
 import django functions
 """
 from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.contrib.auth.hashers import make_password,check_password
 
 """
 import apps,models,serializers
 """
-from apps.account import models, serializers
+from apps.account import models
 from apps.admin import models as admin_models
 
 
 """
 import restframeworks functions
 """
-from rest_framework.decorators import action, api_view, permission_classes,parser_classes
-from rest_framework.parsers import JSONParser,FormParser,MultiPartParser
 from rest_framework.views import APIView
-from rest_framework import generics, parsers, permissions, status
-from rest_framework.response import Response
-from rest_framework_simplejwt import views as jwt_views
+from rest_framework import permissions
 
 """
 import utils functions
 """
-from utils import json,validators,sendmail
-from utils import permissions as cust_perms
+from utils import json,validators
 from utils import functions
 
 """
 other imports
 """
-import random
-from datetime import datetime, timedelta
 import json as j
-import pytz
-from decouple import config as cnf
 import logging
 # from appsacmec_admin import models as admin_models
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
-class RegisterUser(APIView):
+class UserRegister(APIView):
     """
     Registeration of user
     """
@@ -61,7 +44,7 @@ class RegisterUser(APIView):
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
-        return super(RegisterUser, self).dispatch(request, *args, **kwargs)
+        return super(UserRegister, self).dispatch(request, *args, **kwargs)
 
     @csrf_exempt
     def post(self, request):
@@ -96,10 +79,6 @@ class RegisterUser(APIView):
                             return json.Response({"data":[]},"pancard not verified",400, False)
                         if pan==True:
                             print("pan_true")
-
-                # if functions.is_valid_phone(datas['phone']) == False:
-                #     print("not valid phone")
-                #     return json.Response({"data":[]},"Please enter valid mobile number",400,False)
                 
                 Users_data = models.User.objects
                 User_filter = Users_data.filter(phone_number=datas['phone'])
@@ -163,10 +142,6 @@ class RegisterUser(APIView):
                         pan=functions.verify_personalid(datas['personal_id'])
                         if pan==False:
                             return json.Response({"data":[]},"pancard not verified",400, False)
-
-
-                # if functions.is_valid_phone(datas['phone']) == False:
-                #     return json.Response({"data":[]},"Mobile number is invalid",400,False)
 
                 Users_data = models.User.objects
                 User_filter = Users_data.filter(phone_number=datas['phone'])
@@ -244,9 +219,6 @@ class loginApi(APIView):
             if len(datas['password']) == 0 or datas['password'] == '':
                 return json.Response({"data":[]},"Please enter password",400, False)
             
-            
-
-
             users = user_data.get(email=datas['email'])
 
             if check_password(datas['password'],users.password) == False:

@@ -1,5 +1,5 @@
 from django.shortcuts import HttpResponse
-import json, codecs
+import json
 
 
 def Response(data,message,http_code, error=True, json_format=True):

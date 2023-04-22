@@ -15,37 +15,19 @@ Including another URLconf
 """
 from django.conf import settings
 from django.conf.urls.static import static
-from django.shortcuts import render
 from django.urls import include, path, re_path
-from django.views.generic.base import RedirectView
-from drf_yasg2 import openapi
-from drf_yasg2.views import get_schema_view
-from rest_framework import permissions
 from utils import json
 from django.contrib import admin
 
 
 def render_react(request):
     return json.Response({"data":[]},"URL NOT FOUND",404,False)
-# Swagger
-schema_view = get_schema_view(
-    openapi.Info(
-        title="HRMS",
-        default_version='v1',
-        description="HRMS API created using Django Rest Framework",
-        license=openapi.License(name="BSD License"),
-    ),
-    public=True,
-    permission_classes=(permissions.AllowAny,),
-)
 
 
 urlpatterns = [
-    path('api-docs', RedirectView.as_view(pattern_name='schema-swagger-ui')),
-    path('api-docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('admin/', admin.site.urls),
     path('api/user/', include('apps.user.urls')),
-    path('api/admin/', include('apps.admin.urls')),
+    path('api/admin/', include('apps.admin.urls',namespace='default')),
     path('api/account/',include('apps.account.urls')),
 
 ]

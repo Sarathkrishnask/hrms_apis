@@ -6,7 +6,7 @@ User = get_user_model()
 """
 Users Listing serializer
 """
-class UserListingSerializer(serializers.ModelSerializer):
+class UserListSerializer(serializers.ModelSerializer):
     roles = serializers.SerializerMethodField('get_roles')
     role_id = serializers.SerializerMethodField('get_role_id')
     # entity_id = serializers.SerializerMethodField('get_entity_id')
@@ -28,7 +28,7 @@ class UserListingSerializer(serializers.ModelSerializer):
 
 
 
-class UserviewingSerializers(serializers.ModelSerializer):
+class UserDetailViewSerializers(serializers.ModelSerializer):
     roles = serializers.SerializerMethodField('get_roles')
     role_id = serializers.SerializerMethodField('get_role_id')
 
