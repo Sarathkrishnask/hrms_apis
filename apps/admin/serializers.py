@@ -9,9 +9,7 @@ Users Listing serializer
 class UserListSerializer(serializers.ModelSerializer):
     roles = serializers.SerializerMethodField('get_roles')
     role_id = serializers.SerializerMethodField('get_role_id')
-    # entity_id = serializers.SerializerMethodField('get_entity_id')
-    # entity=serializers.SerializerMethodField('get_entity')
-    # address = serializers.SerializerMethodField('get_address')
+
     
 
     def get_roles(self,data):
