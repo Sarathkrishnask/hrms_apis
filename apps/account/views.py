@@ -24,6 +24,7 @@ import utils functions
 """
 from utils import json,validators
 from utils import functions
+from utils import permissions as cust_perms
 
 """
 other imports
@@ -243,7 +244,7 @@ class loginApi(APIView):
                                                     "entity_id":userentity.entity_id}
             else:
                 print("admin user")
-                users.login_count +=1
+                # users.login_count +=1
                 users.save()
                 getjwt=functions.emailauth(user_datas,user_Name_id.id)
                 user_details['access_token'] = getjwt['access_token']
@@ -253,8 +254,8 @@ class loginApi(APIView):
                                                     "email":user_Name_id.email,
                                                     "phone_number":user_Name_id.phone_number,
                                                     "image":user_Name_id.image,
-                                                    "role_id":user_Name_id.roles_id,
-                                                    "login_count":user_Name_id.login_count + 1}
+                                                    "role_id":user_Name_id.roles_id}
+                                                    # "login_count":user_Name_id.login_count + 1}
             return json.Response({"data":user_details},"Logged In Successfully",200,True)
 
         except Exception as e:
@@ -309,3 +310,49 @@ class ChangePassword(APIView):
         except Exception as e:
             return json.Response({"data":[]},"Internal Server Error", 400,False)
         
+class roles_master(APIView):
+        
+    # permission_classes=[permissions.AllowAny]
+    permission_classes=[permissions.IsAuthenticated,cust_perms.ISSuperAdmin]
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super(roles_master, self).dispatch(request, *args, **kwargs)
+
+    @csrf_exempt
+    def post(self,request):
+        try:
+            datas = j.loads(request.body.decode('utf-8'))
+            Users_data = models.User.objects
+            data=models.role_master.objects.all()
+            if not models.role_master.objects.filter(name=datas['role']).exists():
+                data.create(name=datas['role'])
+                # print(data)
+            rolelist = models.role_master.objects.filter(name=datas['role']).first()
+            # rolelist_ = models.role_master.objects.filter(id=datas['role']).first()
+            # type(rolelist_)
+            print("roleslist")
+            user_filed = datas['role']
+            if str(rolelist).lower() == str(user_filed):
+                if validators.user_email_register_validators(datas) == False:
+                    print("is_verify_missing")
+                    return json.Response({"data":[]},"Is_verified Field is missing",400,False)
+                if datas["is_verified"]==False: 
+                    print("verify_otp")
+                    return json.Response({"data":[]},"OTP not verified. Please verify your otp",400,False)
+                Users_data.create(firstname=datas["firstname"],lastname=datas["lastname"],phone_number=datas['phone'],email=datas['email'],is_active=True,is_email_verified=False,is_phone_verified=True,roles_id=rolelist.id,password=make_password(datas["password"]),personalid=datas['personal_id'],country_code=datas['country_code'])
+                user_datas = models.User.objects.get(phone_number=datas['phone'])
+                user_Name_id = models.User.objects.filter(phone_number=datas['phone']).first()
+                user_details = {}
+                getjwt=functions.phoneauth(user_datas,user_Name_id.id)
+                # user_details['access_token'] = getjwt['access_token']
+                # user_details['refresh_token'] = getjwt['refresh_token']
+                user_details['user_info'] = {"id":user_Name_id.id,
+                                            "name":str(user_Name_id.firstname) + str(user_Name_id.lastname),
+                                            "email":user_Name_id.email,
+                                            "phone_number":user_Name_id.phone_number,
+                                            "image":user_Name_id.image}
+                return json.Response({"data":user_details},"User created successfully",201,True)
+        
+        except Exception as e:
+            return json.Response({"data":[e]},"Internal Server Error", 400,False)
